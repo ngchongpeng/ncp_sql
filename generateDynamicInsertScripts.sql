@@ -1,4 +1,5 @@
 
+--
 if (object_id('tempdb..##temp')) is not null drop table ##temp
 
 --
@@ -20,8 +21,10 @@ declare @table varchar(max) = trim(substring(
 declare @columns varchar(max) = (select string_agg(COLUMN_NAME,',') from INFORMATION_SCHEMA.COLUMNS where TABLE_NAME=@table)
 declare @values varchar(max) = (select string_agg(''''''''' + ' + 'isnull(convert(varchar(max),' + COLUMN_NAME + '),''NULL'')' + ' + ''''''''',','','',') from INFORMATION_SCHEMA.COLUMNS where TABLE_NAME=@table)
 
-
---declare @dynamicQuery nvarchar(max) = 'select concat(' + @values + ') from ' + @table
+--
 declare @dynamicQuery nvarchar(max) = 'select ''insert into ' + @table + ' (' + @columns + ') values ('' + ' + 'concat(' + @values + ') + '')'' from ##temp'
 exec sp_executesql @dynamicQuery
+
+--
+if (object_id('tempdb..##temp')) is not null drop table ##temp
 
